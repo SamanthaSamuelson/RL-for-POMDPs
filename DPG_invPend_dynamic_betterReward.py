@@ -14,7 +14,7 @@ tf.keras.backend.set_floatx('float64')
 
 '''
 Deep deterministic policy gradient (actor-critic method) on Mujoco environment InvertedPendulumv4.  
-In this file it is possible to set the length of the inverted pendulum: standard length is 1, we vary lengths from .8 to 1.8. 
+The DDPG agent consists of actor and critic networks as well as train and evaluate methods.   
 
 In this file we've updated the reward function to give more useful feedback, which allows for better training, and better distiction between policies.  
     Instead of giving a reward of +1 for every interaction with the environment in which the pendulum remains upright, we return pi/2-q, where q is the angle 
@@ -23,6 +23,7 @@ In this file we've updated the reward function to give more useful feedback, whi
 
 In this file, we include the possibility of three types of disturbance:
     1. Model inaccuracy or changing model: code allows for the possibility of changing the pendulum length, either while training or while testing the policy
+        In this file it is possible to set the length of the inverted pendulum: standard length is 1, we vary lengths from .8 to 1.8.
     2. Observation noise: we can add Gaussian zero-mean noise to state observations while training and/or evaluation a policy
     3. Partial observability: The state space is four dimintional: linear cart position, angular pole position, linear cart velocity, angular pole velocity
         By truncating the state observation to 2 or three observations (out of 4) we make the problem partially obervable.  
