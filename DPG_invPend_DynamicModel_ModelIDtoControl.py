@@ -13,10 +13,20 @@ import random
 
 tf.keras.backend.set_floatx('float64')
 
-# OK FIRST TRY TO id MODEL WITH A PERFECTLY TRAINED ACTOR ALREADY IN PLACE
-# for now we will keep density the same, change length
+'''
+Deep deterministic policy gradient (actor-critic method) on Mujoco environment InvertedPendulumv4.  
+The DDPG agent consists of actor and critic networks as well as train and evaluate methods.   
 
-# !!!! FOR NOW DO NOT CHANGE ACTOR CRITIC MODEL SHAPE!!!!!
+In this file we've updated the reward function to give more useful feedback, which allows for better training, and better distiction between policies.  
+    Instead of giving a reward of +1 for every interaction with the environment in which the pendulum remains upright, we return pi/2-q, where q is the angle 
+    of the pendulum measured from verticle.  This gives a larger reward the closer to verticle the pendulum remains.  This provides a numerical difference between policies which 
+    both succeed in balancing the pendulum for 1000 steps, but have different degrees of "wobbliness".  
+
+In this file, we compare the effect of performing model ID in the loop.  
+    1. We train a model ID network to estimate the pendulum length based on the past 50 observations
+    2. We train an actor network which takes pendulum length as a parameter. Actor is trained with accurate pend. lenght as an input
+    3. Evaluate performance of the actor using the estimated pend. length from the model ID netowrk as input 
+'''
 
 def resdense(features):
     def unit(i):
@@ -232,6 +242,7 @@ class DDPG_agent:
         return model
 
     def train_sysID_network(self, s_data, a_data, y_data, name):
+        # This network is trained once on a big old batch of data, rather than interactively like the actor/critic networks
         print('data shapes:', np.shape(s_data))
         print('targets shape:', np.shape(y_data))
         print('why is the output this weird shape?')
@@ -738,7 +749,7 @@ class DDPG_agent:
 lengths_list = [.6,.5,.4,.7,.8,.9]
 
 environment = gym.make("InvertedPendulum-v4")
-#name = 'models/InvPendv2_Jan06_b'
+#name = 'models/InvPendv4_b'
 
 
 model_path = 'inverted_pendulum.xml'
@@ -751,7 +762,7 @@ else:
 
 my_agent = DDPG_agent(environment)
 sysID_model_name = 'models/model_length_predictor_1'
-AC_model_name = 'Parameterized_InvPendv2_Sep16_a'
+AC_model_name = 'Parameterized_InvPendv4_1'
 
 # [s_data, a_data, y_data] = my_agent.generate_sysID_training_data(environment, model_names_list, lengths_list, xml_model_fullpath)
 # [s_data, a_data, y_data] = my_agent.generate_sysID__bad_training_data(environment, xml_model_fullpath)
