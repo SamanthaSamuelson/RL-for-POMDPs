@@ -12,6 +12,23 @@ import math
 
 tf.keras.backend.set_floatx('float64')
 
+'''
+Deep deterministic policy gradient (actor-critic method) on Mujoco environment InvertedPendulumv4.  
+In this file it is possible to set the length of the inverted pendulum: standard length is 1, we vary lengths from .8 to 1.8. 
+
+In this file we've updated the reward function to give more useful feedback, which allows for better training, and better distiction between policies.  
+    Instead of giving a reward of +1 for every interaction with the environment in which the pendulum remains upright, we return pi/2-q, where q is the angle 
+    of the pendulum measured from verticle.  This gives a larger reward the closer to verticle the pendulum remains.  This provides a numerical difference between policies which 
+    both succeed in balancing the pendulum for 1000 steps, but have different degrees of "wobbliness".  
+
+In this file, we include the possibility of three types of disturbance:
+    1. Model inaccuracy or changing model: code allows for the possibility of changing the pendulum length, either while training or while testing the policy
+    2. Observation noise: we can add Gaussian zero-mean noise to state observations while training and/or evaluation a policy
+    3. Partial observability: The state space is four dimintional: linear cart position, angular pole position, linear cart velocity, angular pole velocity
+        By truncating the state observation to 2 or three observations (out of 4) we make the problem partially obervable.  
+
+By experimenting with these sources of error with the updated cost function, we can gain a sense of how various model imperfections cost the expected value of the problem
+'''
 
 def resdense(features):
     def unit(i):
@@ -30,43 +47,7 @@ def resdense(features):
 
     return unit
 
-class OUActionNoise:
-    def __init__(self, mean, std_deviation, theta=0.15, dt=1e-2, x_initial=None):
-        self.theta = theta
-        self.mean = mean
-        self.std_dev = std_deviation
-        self.dt = dt
-        self.x_initial = x_initial
-        self.reset()
 
-    def __call__(self):
-        # Formula taken from https://www.wikipedia.org/wiki/Ornstein-Uhlenbeck_process.
-        x = (
-            self.x_prev
-            + self.theta * (self.mean - self.x_prev) * self.dt
-            + self.std_dev * np.sqrt(self.dt) * np.random.normal(size=self.mean.shape)
-        )
-        # Store x into x_prev
-        # Makes next noise dependent on current one
-        self.x_prev = x
-        return x
-
-    def reset(self):
-        if self.x_initial is not None:
-            self.x_prev = self.x_initial
-        else:
-            self.x_prev = np.zeros_like(self.mean)
-
-
-class NoiseObject: # cam make this fancy oblesteck noise later
-    def __init__(self, mu, sigma):
-        self.standard_deviation = sigma
-        self.mean = mu #what if its not... bad for exploration, but good for robustness
-        self.shape = 1
-
-    def __call__(self):
-        n = np.random.normal(self.mean, self.standard_deviation, self.shape)
-        return n
 
 class ReplayBuffer:
     def __init__(self, buffer_size, batch_size, state_size, action_size):
@@ -95,8 +76,7 @@ class ReplayBuffer:
         self.total_count += 1
 
 
-    def get_training_batch(self): # should this be different for RNN?
-        # move casting to tf here, to match source code better
+    def get_training_batch(self): 
         current_size = np.min([self.total_count, self.max_size])
         sample_indices = np.random.choice(current_size, self.batch_size, replace=True) # assumes you dont sample till buffer is full
         prev_state_batch = tf.convert_to_tensor(self.prev_state_buffer[sample_indices])
@@ -188,20 +168,6 @@ class DDPG_agent:
             weights.append(weight * self.tau + targets[i] * (1 - self.tau))
         target_model.set_weights(weights)
 
-    def create_actor_network_orig(self):
-        # Initialize weights between -3e-3 and 3-e3
-        last_init = tf.random_uniform_initializer(minval=-0.003, maxval=0.003)
-
-        inputs = layers.Input(shape=self.state_space)
-        out = layers.Dense(256, activation="relu")(inputs)
-        out = layers.Dense(256, activation="relu")(out)
-        outputs = layers.Dense(self.num_actions, activation="tanh", kernel_initializer=last_init)(out)
-
-        # Our upper bound is 2.0 for Pendulum.
-        outputs = outputs * self.upper_bound
-        model = tf.keras.Model(inputs, outputs)
-        return model
-
     def create_actor_network(self):
         # input state, output action
         # note: if we use dropout or batch normalization use the training=TRUE (or false) flag when calling the model
@@ -236,28 +202,6 @@ class DDPG_agent:
         # source doesn't compile, so for now we dont either
         return model
         # ok, mean squared error is really the wrong loss here - we dont use it anyway
-
-    def create_critic_network_orig(self):
-        # State as input
-        state_input = layers.Input(shape=self.state_space)
-        state_out = layers.Dense(16, activation="relu")(state_input)
-        state_out = layers.Dense(32, activation="relu")(state_out)
-
-        # Action as input
-        action_input = layers.Input(shape=self.action_space)
-        action_out = layers.Dense(32, activation="relu")(action_input)
-
-        # Both are passed through seperate layer before concatenating
-        concat = layers.Concatenate()([state_out, action_out])
-
-        out = layers.Dense(256, activation="relu")(concat)
-        out = layers.Dense(256, activation="relu")(out)
-        outputs = layers.Dense(1)(out)
-
-        # Outputs single value for give state-action
-        model = tf.keras.Model([state_input, action_input], outputs)
-
-        return model
 
     def create_critic_network(self):
         # input state, action, output value
@@ -498,17 +442,9 @@ else:
 
 
 
-#name = 'InvPendv2_Mar12_a'
-
-#model_names_list = ['InvPendv2_Jan06_b','InvPendv2_Jan07_b','InvPendv2_Jan07_a',
-#                    'InvPendv2_Jan07_c','InvPendv2_Jan07_d', 'InvPendv2_Mar12_a']
-lengths_list = [.6,.5,.4,.7,.8,.9]
-
-
 name = 'InvPendv4_PartialObs_2'
-length = .6
+length = .5
 
-# maybe move num_training eps input around??
 my_agent = DDPG_agent(environment)
 environment = my_agent.change_model(environment, xml_model_fullpath, length)
 #my_agent.my_load(os.path.join("models", name))
