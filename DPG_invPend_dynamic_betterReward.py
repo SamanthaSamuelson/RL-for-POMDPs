@@ -174,7 +174,7 @@ class DDPG_agent:
         # note: if we use dropout or batch normalization use the training=TRUE (or false) flag when calling the model
         last_init = tf.random_uniform_initializer(minval=-0.003, maxval=0.003)
 
-        state_input = Input(shape=self.state_space)  ## WANT TO BE ABLE TO SET STATE_SPACE SIZE AUTOMATICALLY, NEED TO FIX
+        state_input = Input(shape=self.state_space) 
         i = state_input
         #i = Flatten()(i)
         #i = Dense(32, activation="relu")(i)
@@ -200,13 +200,11 @@ class DDPG_agent:
         def my_loss_fn(_, crit_of_pred):
             return -tf.reduce_mean(crit_of_pred)  # Note the `axis=-1`
         model.compile(loss=my_loss_fn, optimizer=self.actor_optimizer)
-        # source doesn't compile, so for now we dont either
         return model
-        # ok, mean squared error is really the wrong loss here - we dont use it anyway
 
     def create_critic_network(self):
         # input state, action, output value
-        state_input = Input(shape=self.state_space) ## WANT TO BE ABLE TO SET STATE_SPACE SIZE AUTOMATICALLY, NEED TO FIX
+        state_input = Input(shape=self.state_space) 
         # h = Dense(8, activation="relu")(state_input)
         #h = Dense(32, activation="relu")(h)
 
