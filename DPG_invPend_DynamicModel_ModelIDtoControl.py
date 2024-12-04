@@ -733,8 +733,8 @@ class DDPG_agent:
 
 
 #######################################################################################################################
-model_names_list = ['models/InvPendv2_Jan06_b','models/InvPendv2_Jan07_b','models/InvPendv2_Jan07_a',
-                    'models/InvPendv2_Jan07_c','models/InvPendv2_Jan07_d', 'models/InvPendv2_Mar12_a']
+#model_names_list = ['InvPendv4_length6','InvPendv4_length5','InvPendv4_length4_b',
+#                    'InvPendv4_length7','InvPendv4_length8', 'InvPendv4_length9']
 lengths_list = [.6,.5,.4,.7,.8,.9]
 
 environment = gym.make("InvertedPendulum-v4")
