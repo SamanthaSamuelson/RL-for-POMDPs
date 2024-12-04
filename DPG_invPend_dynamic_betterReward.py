@@ -347,37 +347,30 @@ class DDPG_agent:
 
     def change_model(self, env, xml_path, new_pend_length):
         et = xml.etree.ElementTree.parse(xml_path)
-        print('xml object', et)
+        #print('xml object', et)
         root = et.getroot()
         for child in root:
             print(child.tag, child.attrib)
 
         pendulum_geom_lengths = root[4][1][2][1].get('fromto')
         pendulum_geom_density = root[4][1][2][1].get('density')
-        print('current pole length', pendulum_geom_lengths)
-        print('current pole density', pendulum_geom_density)
+        #print('current pole length', pendulum_geom_lengths)
+        #print('current pole density', pendulum_geom_density)
 
-        #old_state = env.sim.get_state()
         old_state = env.data
-        #print('all state info:', old_state.time, old_state.qpos, old_state.qvel, old_state.act,
-        #      old_state.udd_state)
         print('state info', old_state)
 
 
         print('CHANGING PARAMETERS NOW')
 
-        #new_pend_length = .6
         pendulum_geom_lengths = '0 0 0 0.001 0 {}'.format(new_pend_length)
-        #pendulum_geom_lengths = '0 0 0 0.001 0 0.6'
-        print('new pendulum (half) length .6')
         new_pend_density = 1000
         pendulum_geom_density = '{}'.format(new_pend_density)
-        #pendulum_geom_density = '1000'
-        print('new pendulum density', pendulum_geom_density)
+        #print('new pendulum density', pendulum_geom_density)
         root[4][1][2][1].set('fromto', pendulum_geom_lengths)
         root[4][1][2][1].set('density', pendulum_geom_density)
-        print('trying to access pole length', root[4][1][2][1].attrib)
-        print('trying to access pole density', root[4][1][2][1].attrib)
+        #print('trying to access pole length', root[4][1][2][1].attrib)
+        #print('trying to access pole density', root[4][1][2][1].attrib)
 
         et.write(xml_model_fullpath)
         print('xml file has been written')
@@ -386,9 +379,9 @@ class DDPG_agent:
         env = gym.make("InvertedPendulum-v4")
         env.reset()
 
-        print('resetting model to previous state', env.set_state(old_state.qpos, old_state.qvel))
+        #print('resetting model to previous state', env.set_state(old_state.qpos, old_state.qvel))
         env.set_state(old_state.qpos, old_state.qvel)
-        print('Done! \n')
+        #print('Done! \n')
         return env
 
     def evaluate(self, env, episodes=10, render=False):
