@@ -5,24 +5,12 @@ from tensorflow.keras import layers
 from tensorflow.keras.layers import Dense, Flatten, Input, Add, Activation, Lambda, Concatenate, LSTM
 from tensorflow.keras.optimizers import RMSprop, Adam, SGD
 import numpy as np
+import os
+import pickle
 
 tf.keras.backend.set_floatx('float64')
 
-# change 1: switch to out boring gaussian exploration noise:
-        #  no change
-# change 2: put everything into a DDPG_agent class, also: move learning from buffer object to agent object
-        # no change
-# change 3: switch to our buffer object
-    # specifically - move sapmling step into buffer function
-        # still seems to work
-# change 4: switch to our create_actor_network function
-    # specifically - no explicit initialization of network params
-    # specifically - different post tanh scaling function
-        # this makes it WORSE, but doesn't make it fail completely
-# change 5: switch to our create_critic_network function
-    # THIS DEFINITELY MADE IT FAIL
-    # INTERMEDIATE RELU ACTIVATIONS SEEM IMPORTANT
-# change 6: get_action vs policy functions - seem different...
+# Deep Deterministic Policy Gradient (actor-critic method) on the OpenAi pendulum swingup problem.  Policy is saved in 'DDPG_PendSwingUp_1'
 
 
 class OUActionNoise:
@@ -320,12 +308,13 @@ class DDPG_agent:
 
 
 
-    def train(self):
+    def train(self, model_name):
 
         # To store reward history of each episode
         ep_reward_list = []
         # To store average reward history of last few episodes
         avg_reward_list = []
+        max_reward = float('-inf')
 
         # Takes about 4 min to train
         for ep in range(self.total_episodes):
@@ -384,6 +373,11 @@ class DDPG_agent:
             avg_reward = np.mean(ep_reward_list[-40:])
             print("Episode * {} * Avg Reward is ==> {}".format(ep, avg_reward))
             avg_reward_list.append(avg_reward)
+            if avg_reward >= max_reward:
+                self.my_save( model_name)
+                #self.my_save(os.path.join("models", model_name))
+                max_reward = avg_reward
+                print('saving run with average reward ', avg_reward)
 
     def demonstrate_policy(self, train_eps):
 
@@ -418,13 +412,29 @@ class DDPG_agent:
         # plt.ylabel("Avg. Epsiodic Reward")
         # plt.show()
 
+    def my_save(self, name):
+        W_a = self.actor_model.get_weights()
+        W_c = self.critic_model
+        pickle.dump(W_a, open(name, 'wb'))
+        #print('saving!')
+        # print(W[0])
+
+    def my_load(self, name):
+        W_a = pickle.load(open(name, 'rb'))
+        self.actor_model.set_weights(W_a)
+        # print(W[0])
+
+
 
 problem = "Pendulum-v1"
+name = 'DDPG_PendSwingUp_1'
 
-env = gym.make(problem)
-my_agent = DDPG_agent(env)
-my_agent.train()
-env.close()
+#env = gym.make(problem)
+#my_agent = DDPG_agent(env)
+#my_agent.train(name)
+#env.close()
 
 env = gym.make(problem, render_mode='human')
+my_agent = DDPG_agent(env)
+my_agent.my_load(name)
 my_agent.demonstrate_policy(10)
