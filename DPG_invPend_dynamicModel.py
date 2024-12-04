@@ -11,21 +11,15 @@ import pickle
 
 tf.keras.backend.set_floatx('float64')
 
-# change 1: switch to out boring gaussian exploration noise:
-        #  no change
-# change 2: put everything into a DDPG_agent class, also: move learning from buffer object to agent object
-        # no change
-# change 3: switch to our buffer object
-    # specifically - move sapmling step into buffer function
-        # still seems to work
-# change 4: switch to our create_actor_network function
-    # specifically - no explicit initialization of network params
-    # specifically - different post tanh scaling function
-        # this makes it WORSE, but doesn't make it fail completely
-# change 5: switch to our create_critic_network function
-    # THIS DEFINITELY MADE IT FAIL
-    # INTERMEDIATE RELU ACTIVATIONS SEEM IMPORTANT
-# change 6: get_action vs policy functions - seem different...
+'''
+Deep deterministic policy gradient (actor-critic method) on Mujoco environment InvertedPendulumv4.  
+In this file it is possible to set the length of the inverted pendulum: standard length is 1, we learn optimal policies 
+        for lengths from .8 to 1.8.  Optimal policies are stored in
+       ['InvPendv4_length6','InvPendv4_length5','InvPendv4_length4_b','InvPendv4_length7','InvPendv4_length8', 'InvPendv4_length9']
+       and labled by corresponding half-pendulum values.  
+
+'''
+
 
 def resdense(features):
     def unit(i):
@@ -518,10 +512,10 @@ else:
 
 
 
-#name = 'InvPendv2_Mar12_a'
+#name = 'InvPendv2_b'
 
-#model_names_list = ['InvPendv2_Jan06_b','InvPendv2_Jan07_b','InvPendv2_Jan07_a',
-#                    'InvPendv2_Jan07_c','InvPendv2_Jan07_d', 'InvPendv2_Mar12_a']
+#model_names_list = ['InvPendv4_length6','InvPendv4_length5','InvPendv4_length4_b',
+#                    'InvPendv4_length7','InvPendv4_length8', 'InvPendv4_length9']
 lengths_list = [.6,.5,.4,.7,.8,.9]
 
 
