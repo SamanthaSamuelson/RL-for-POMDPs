@@ -8,4 +8,7 @@ We include the possibility of three types of disturbance:
     3. Partial observability: The state space is four dimintional: linear cart position, angular pole position, linear cart velocity, angular pole velocity
         By truncating the state observation to 2 or three observations (out of 4) we make the problem partially obervable.  
 
+File DPG_invPend_dynamic_betterReward.py trains and evaluates models under all three sources of disturbance.  
+File DPG_invPend_DynamicModel_ModelIDtoControl performs in-the-loop model identification to control the inverted pendulum while the pendulum length changes
+
 Ideally we will be able to match the value function learned for these problems settings to a theoretical lower bound on the relative sub-optimality of a value function learned in a partially observable setting for this specific inverted pendulum dynamical system.
