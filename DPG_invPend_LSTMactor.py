@@ -162,7 +162,6 @@ class DDPG_agent:
         #self.total_episodes = num_training_episodes
         self.buffer_size = 100000
         self.batch_size = 64
-        self.buffer = ReplayBuffer(self.buffer_size, self.batch_size, self.num_states, self.num_actions)
         self.buffer2 = ReplayBuffer_with_hist(self.buffer_size, self.batch_size, self.num_states, self.num_actions, self.hist_length)
 
 
@@ -315,7 +314,7 @@ class DDPG_agent:
                 #print('sizes of prev_state batches we got from buffer: next state batch', tf.shape(prev_state_batch).numpy()
                  #     , tf.shape(prev_state_batch2).numpy())
                 #print('sizes of action batches we got from buffer: next state batch',tf.shape(action_batch).numpy()
-                      , tf.shape(action_batch2).numpy())
+                #      , tf.shape(action_batch2).numpy())
                 #print('sizes of next_state batches we got from buffer: next state batch',tf.shape(next_state_batch).numpy()
                  #     , tf.shape(next_state_batch2).numpy())
                 #print('sizes of reward batches we got from buffer: next state batch',
