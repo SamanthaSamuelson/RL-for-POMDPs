@@ -8,6 +8,7 @@ import numpy as np
 import xml.etree.ElementTree
 import os
 import pickle
+import math
 
 tf.keras.backend.set_floatx('float64')
 
@@ -279,7 +280,7 @@ class DDPG_agent:
         self.actor_optimizer.apply_gradients(zip(actor_grad, self.actor_model.trainable_variables))
 
 
-    def train(self, env, total_episodes=1000, render=False, dynamic_model=False, xml_path=''):
+    def train(self, env, total_episodes=1000, render=False, dynamic_model=False, xml_path='', model_name = 'DDPG_model'):
         total_steps = 0
         change_idx = np.random.choice(range(50000,60000),1)
         print('model should change at ', change_idx)
@@ -424,7 +425,6 @@ class DDPG_agent:
         pickle.dump(W_a, open(name, 'wb'))
         #print('saving!')
         # print(W[0])
-        models.save
 
     def my_load(self, name):
         W_a = pickle.load(open(name, 'rb'))
@@ -451,7 +451,7 @@ length = .6
 my_agent = DDPG_agent(environment)
 environment = my_agent.change_model(environment, xml_model_fullpath, length)
 my_agent.my_load(os.path.join("models", name))
-#my_agent.train(environment,total_episodes=3000, dynamic_model=False, xml_path=xml_model_fullpath)
+#my_agent.train(environment,total_episodes=3000, dynamic_model=False, xml_path=xml_model_fullpath, name)
 #my_agent.my_save(os.path.join("models", name))
 my_agent.evaluate(environment, episodes=20)
 #my_agent.my_load(name)
