@@ -1,7 +1,7 @@
 Repository contains basic experiments in the performance of Q learning (specifically deep deterministic policy gradient) on the inverted pendulum problem as simulated by Mujoco.  
 The goal is to use simulations to provide some numerical answers to the question: How much does poor observatility cost in terms of the expected value of the problem? 
 
-We include the possibility of three types of disturbance:
+We include the possibility of three types of disturbance: <br/>
     1. Model inaccuracy or changing model: code allows for the possibility of changing the pendulum length, either while training or while testing the policy.  
         In this file it is possible to set the length of the inverted pendulum: standard length is 1, we vary lengths from .8 to 1.8.
     2. Observation noise: we can add Gaussian zero-mean noise to state observations while training and/or evaluation a policy.  
